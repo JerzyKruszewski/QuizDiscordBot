@@ -17,39 +17,8 @@ namespace QuizDiscordBot.Modules
     /// <remarks>
     /// Według konwencji komendy powinny być publicznymi asynchronicznymi zadaniami pomimo ostrzeżeń IDE
     /// </remarks>
-    public class Test : InteractiveBase<SocketCommandContext>
+    public class Commands : InteractiveBase<SocketCommandContext>
     {
-        /// <summary>
-        /// Komenda testowa
-        /// </summary>
-        /// <param name="expiresafteruse">
-        /// Czy komenda ma przestać działać po 1. zaznaczeniu odpowiedzi
-        /// </param>
-        /// <param name="singleuseperuser">
-        /// Czy komenda wspiera tylko 1 odpowiedź na 1 użytkownika
-        /// </param>
-        /// <param name="sourceuser">
-        /// Czy komenda będzie reagować jedynie na użytkownika który ją wywołał
-        /// </param>
-        /// <returns></returns>
-        [Command("quiz", RunMode = RunMode.Async)]
-        public async Task Test_EmedReactionReply(bool expiresafteruse = true, bool singleuseperuser = true, bool sourceuser = true)
-        {
-            var one = new Emoji("1⃣");
-            var two = new Emoji("2⃣");
-
-            var embed = new EmbedBuilder()
-                .WithTitle("2+2=?")
-                .AddField(one.Name, "4", true)
-                .AddField(two.Name, "0", true)
-                .Build();
-
-            await InlineReactionReplyAsync(new ReactionCallbackData("text", embed, expiresafteruse, singleuseperuser, TimeSpan.FromSeconds(20), (c) => c.Channel.SendMessageAsync("Timed Out!"))
-                .WithCallback(one, (c, r) => c.Channel.SendMessageAsync($"{r.User.Value.Mention} Dobra Odpowiedź!"))
-                .WithCallback(two, (c, r) => c.Channel.SendMessageAsync($"{r.User.Value.Mention} Matematyka się kłania.")), sourceuser
-            );
-        }
-
         /// <summary>
         /// Komenda do pozostawienia oceny bota
         /// </summary>
@@ -79,7 +48,41 @@ namespace QuizDiscordBot.Modules
         /// </summary>
         /// <returns></returns>
         /// <remarks>
-        /// Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze
+        /// Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze (gildii)
+        /// 
+        /// Schemat działania:
+        /// 0. START - użytkownik wpisał komendę
+        /// 1. Sprawdza czy użytkownik jest uprawniony do wywołania komendy
+        ///     1a. Jeśli jest:
+        ///         1a.1. Sprawdza czy gildia istnieje w bazie danych
+        ///             1a.1a. Jeśli nie:
+        ///                 1a.1a.1. Tworzy nową gildię
+        ///                 1a.1a.2. Dodaje ją do bazy danych gildii
+        ///                 1a.1a.3. Zapisuje zmiany do bazy danych
+        ///                 1a.1a.4. Przekazuje dalej dane
+        ///             1a.1b. Jeśli tak:
+        ///                 1a.1b.1. Pobiera dane o gildii
+        ///         1a.2. Pobiera wszystkie dosyępne w gildii kategorie
+        ///         1a.3. Wysyła do użytkownika informacje o istniejących kategoriach
+        ///         1a.4. Oczekuje na reakcję użytkownika z nazwą nowej kategorii
+        ///             1a.4a. Jeśli nie nadejdzie:
+        ///                 1a.4a.1. Poinformuje użytkownika o błędzie
+        ///                 1a.4a.2. Wstrzymuje proces
+        ///                 1a.4a.3. KONIEC - algorytm nie otrzymał wymaganej informacji od użytkownika
+        ///             1a.4b. Jeśli nadejdzie:
+        ///                 1a.4b.1. Sprawdzi czy kategoria o podanej przez użytkownika nazwie istnieje
+        ///                     1a.4b.1a. Jeśli istnieje:
+        ///                         1a.4b.1a.1. Poinformuje użytkownika o błędzie
+        ///                         1a.4b.1a.2. Wstrzymuje proces
+        ///                         1a.4b.1a.3. KONIEC - kategoria już istnieje
+        ///                     1a.4b.1b. Jeśli nie istnieje:
+        ///                         1a.4b.1b.1. Stworzy nową kategorię
+        ///                         1a.4b.1b.2. Dodaje kategorię do bazy danych
+        ///                         1a.4b.1b.3. Zapisuje zmiany do bazy danych
+        ///                         1a.4b.1b.4. KONIEC - sukces, kategoria została dodana
+        ///     1b. Jeśli nie jest:
+        ///         1b.1. Wypisuje informacje o nadużyciu
+        ///         1b.2. KONIEC - użytkownik nie uprawniony
         /// </remarks>
         [Command("CreateCategory", RunMode = RunMode.Async)]
         [Alias("cc")]
@@ -105,18 +108,27 @@ namespace QuizDiscordBot.Modules
             // Wait 2 min for message from source user with category name
             SocketMessage message = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
 
-            // check if user send a second message
-            if (message != null)
+            // check if user send next message
+            if (message == null)
             {
-                // Create new category
-                Category newCategory = Categories.CreateCategory(message.Content, guild.Categories);
-
-                // Add category to server informations
-                guild.Categories.Add(newCategory);
-
-                // Save server informations with new category
-                Guilds.Save();
+                await Context.Channel.SendMessageAsync("Wstrzymano dodawanie kategorii.");
+                return;
             }
+
+            // Create new category
+            Category newCategory = Categories.CreateCategory(message.Content, guild.Categories);
+
+            if (newCategory == null)
+            {
+                await Context.Channel.SendMessageAsync("Kategoria istnieje. Wstrzymano dodawanie kategorii.");
+                return;
+            }
+
+            // Add category to server informations
+            guild.Categories.Add(newCategory);
+
+            // Save server informations with new category
+            Guilds.Save();
         }
 
         /// <summary>
@@ -146,76 +158,89 @@ namespace QuizDiscordBot.Modules
 
                 await Context.Channel.SendMessageAsync(msg);
 
-                SocketMessage categoryIdM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+                SocketMessage massageWithCategoryId = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
 
-                if (categoryIdM != null)
+                if (massageWithCategoryId == null)
                 {
-                    Category category = guild.Categories.FirstOrDefault(x => x.Id == Int32.Parse(categoryIdM.Content.Trim()));
-
-                    if (category == null)
-                    {
-                        return;
-                    }
-
-                    await ReplyAsync("Podaj treść pytania:");
-
-                    SocketMessage questionDescM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                    if (questionDescM != null)
-                    {
-                        string description = questionDescM.Content;
-
-                        await ReplyAsync("Podaj możliwe odpowiedzi, oddziel je |");
-
-                        SocketMessage possibleAnswM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                        if (possibleAnswM != null)
-                        {
-                            List<string> possibleAnswers = possibleAnswM.Content.Split('|').ToList();
-
-                            int i = 0;
-                            string message = "";
-
-                            foreach (string pAns in possibleAnswers)
-                            {
-                                message += $"{i} - {pAns}\n";
-                                i++;
-                            }
-
-                            await ReplyAsync($"{message}\n\nPodaj indeks prawidłowej odpowiedzi:");
-
-                            SocketMessage rightAnswM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                            if (rightAnswM != null)
-                            {
-                                int rightAns = Int32.Parse(rightAnswM.Content.Trim());
-
-                                if (rightAns < 0 || rightAns >= possibleAnswers.Count)
-                                {
-                                    await ReplyAsync("Niewłaściwy format. Wstrzymano dodawanie pytania.");
-                                    return;
-                                }
-
-                                await ReplyAsync("Podaj URL zdjęcia do pytania (zignoruj tą wiadomość przez min, aby nic nie dodawać):");
-
-                                string imageURL = null;
-
-                                SocketMessage imageURLM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                                if (imageURLM != null)
-                                {
-                                    imageURL = imageURLM.Content;
-                                }
-
-                                Question newQuestion = Questions.CreateQuestion(description, rightAns, possibleAnswers, guild.Categories, imageURL);
-
-                                category.Questions.Add(newQuestion);
-                            }
-                        }
-                    }
-
-                    Guilds.Save();
+                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
+                    return;
                 }
+
+                Category desiredCategory = guild.Categories.SingleOrDefault(x => x.Id == Int32.Parse(massageWithCategoryId.Content.Trim()));
+
+                if (desiredCategory == null)
+                {
+                    await Context.Channel.SendMessageAsync("Nie znaleziono kategorii. Wstrzymano dodawanie pytania.");
+                    return;
+                }
+
+                await ReplyAsync("Podaj treść pytania:");
+
+                SocketMessage messageWithQuestionDescription = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+
+                if (messageWithQuestionDescription == null)
+                {
+                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
+                    return;
+                }
+
+                string description = messageWithQuestionDescription.Content;
+
+                await ReplyAsync("Podaj możliwe odpowiedzi, oddziel je |");
+
+                SocketMessage messageWithAllPossibleAnswers = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+
+                if (messageWithAllPossibleAnswers == null)
+                {
+                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
+                    return;
+                }
+
+                List<string> allPossibleAnswers = messageWithAllPossibleAnswers.Content.Split('|').ToList();
+
+                int i = 0;
+                string message = "";
+
+                foreach (string possibleAnswer in allPossibleAnswers)
+                {
+                    message += $"{i} - {possibleAnswer}\n";
+                    i++;
+                }
+
+                await ReplyAsync($"{message}\n\nPodaj indeks prawidłowej odpowiedzi:");
+
+                SocketMessage messageWithRightAnswer = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+
+                if (messageWithRightAnswer == null)
+                {
+                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
+                    return;
+                }
+
+                int rightAnswer = Int32.Parse(messageWithRightAnswer.Content.Trim());
+
+                if (rightAnswer < 0 || rightAnswer >= allPossibleAnswers.Count)
+                {
+                    await ReplyAsync("Niewłaściwy format. Wstrzymano dodawanie pytania.");
+                    return;
+                }
+
+                await ReplyAsync("Podaj URL zdjęcia do pytania (zignoruj tą wiadomość przez min, aby nic nie dodawać):");
+
+                string imageURL = null;
+
+                SocketMessage messageWithImageUrl = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+
+                if (messageWithImageUrl != null)
+                {
+                    imageURL = messageWithImageUrl.Content;
+                }
+
+                Question newQuestion = Questions.CreateQuestion(description, rightAnswer, allPossibleAnswers, guild.Categories, imageURL);
+
+                desiredCategory.Questions.Add(newQuestion);
+
+                Guilds.Save();
             }
             catch (Exception)
             {
@@ -247,56 +272,66 @@ namespace QuizDiscordBot.Modules
                     msg += $"{category.Id} - {category.Name} ({category.ProblemCovers.Count}/{category.Questions.Count})\n";
                 }
 
-                msg += "\nPodaj nazwę kategorii:";
+                msg += "\nPodaj indeks kategorii:";
 
                 await Context.Channel.SendMessageAsync(msg);
 
-                SocketMessage categoryNameM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+                SocketMessage massageWithCategoryId = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
 
-                if (categoryNameM != null)
+                if (massageWithCategoryId == null)
                 {
-                    Category category = guild.Categories.FirstOrDefault(x => x.Name == categoryNameM.Content.Trim().ToUpper());
-
-                    if (category == null)
-                    {
-                        return;
-                    }
-
-                    await ReplyAsync("Podaj tytuł problemu:");
-
-                    SocketMessage problemTitleM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                    if (problemTitleM != null)
-                    {
-                        string title = problemTitleM.Content;
-
-                        await ReplyAsync("Podaj treść opracowania:");
-
-                        SocketMessage problemDescM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                        if (problemDescM != null)
-                        {
-                            string description = problemDescM.Content;
-
-                            await ReplyAsync("Podaj URL zdjęcia do opracowania (zignoruj tą wiadomość przez min, aby nic nie dodawać):");
-
-                            string imageURL = null;
-
-                            SocketMessage imageURLM = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                            if (imageURLM != null)
-                            {
-                                imageURL = imageURLM.Content;
-                            }
-
-                            ProblemCover problem = ProblemCovers.CreateProblemCover(title, description, guild.Categories, imageURL);
-
-                            category.ProblemCovers.Add(problem);
-                        }
-                    }
-
-                    Guilds.Save();
+                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
+                    return;
                 }
+
+                Category desiredCategory = guild.Categories.SingleOrDefault(x => x.Id == Int32.Parse(massageWithCategoryId.Content.Trim()));
+
+                if (desiredCategory == null)
+                {
+                    await Context.Channel.SendMessageAsync("Nie znaleziono kategorii. Wstrzymano dodawanie pytania.");
+                    return;
+                }
+
+                await ReplyAsync("Podaj tytuł problemu:");
+
+                SocketMessage messageWithProblemTitle = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+
+                if (messageWithProblemTitle == null)
+                {
+                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
+                    return;
+                }
+
+                string title = messageWithProblemTitle.Content;
+
+                await ReplyAsync("Podaj treść opracowania:");
+
+                SocketMessage messageWithProblemDescription = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+
+                if (messageWithProblemDescription == null)
+                {
+                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
+                    return;
+                }
+
+                string description = messageWithProblemDescription.Content;
+
+                await ReplyAsync("Podaj URL zdjęcia do opracowania (zignoruj tą wiadomość przez min, aby nic nie dodawać):");
+
+                string imageURL = null;
+
+                SocketMessage messageWithImageUrl = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
+
+                if (messageWithImageUrl != null)
+                {
+                    imageURL = messageWithImageUrl.Content;
+                }
+
+                ProblemCover problem = ProblemCovers.CreateProblemCover(title, description, guild.Categories, imageURL);
+
+                desiredCategory.ProblemCovers.Add(problem);
+
+                Guilds.Save();
             }
             catch (Exception)
             {

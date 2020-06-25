@@ -40,13 +40,30 @@ namespace QuizDiscordBot.Core
         /// </returns>
         public static Category CreateCategory(string name, List<Category> categories)
         {
-            return new Category()
+            return CategoryExists(name, categories) ? null : new Category()
             {
                 Id = categories.Count,
-                Name = name,
+                Name = name.ToUpper(),
                 ProblemCovers = new List<ProblemCover>(),
                 Questions = new List<Question>()
             };
+        }
+
+        /// <summary>
+        /// Sprawdź, czy kategoria o takiej nazwie istnieje
+        /// </summary>
+        /// <param name="name">
+        /// Nazwa nowej kategorii
+        /// </param>
+        /// <param name="categories">
+        /// Lista wszystkich kategorii dostępnych na serwerze
+        /// </param>
+        /// <returns>
+        /// Czy kategoria istnieje
+        /// </returns>
+        private static bool CategoryExists(string name, List<Category> categories)
+        {
+            return categories.SingleOrDefault(c => c.Name == name.ToUpper()) != null;
         }
     }
 }
