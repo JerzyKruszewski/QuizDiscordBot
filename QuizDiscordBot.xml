@@ -1,0 +1,917 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>QuizDiscordBot</name>
+    </assembly>
+    <members>
+        <member name="T:QuizDiscordBot.BotConfig">
+            <summary>
+            Struktura przechowująca dane o bocie
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.BotConfig.token">
+            <summary>
+            Token do autoryzacji zapytań API
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.BotConfig.cmdPrefix">
+            <summary>
+            Prefix do komendy
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.BotConfig.ownerID">
+            <summary>
+            Discordowe Id właściciela
+            </summary>
+            <remarks>
+            Nieużyte 
+            </remarks>
+        </member>
+        <member name="T:QuizDiscordBot.CommandHandler">
+            <summary>
+            Klasa odpowiedzialna za obsługę komend
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.CommandHandler._client">
+            <summary>
+            Obiekt odpowiedzialny za obsługę konta bota na discordzie
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.CommandHandler._commands">
+            <summary>
+            Framework do obsługi komend
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.CommandHandler._service">
+            <summary>
+            Nie mam pojęcia co to jest, ale bez niego bot nie będzie rozpoznawał komend
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.CommandHandler.InitializeAsync(Discord.WebSocket.DiscordSocketClient)">
+            <summary>
+            Zainicjuj obsługę komend dla bota
+            </summary>
+            <param name="client">
+            Bot's discord account
+            </param>
+            <returns>
+            Task object
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.CommandHandler.HandleCommandAsync(Discord.WebSocket.SocketMessage)">
+            <summary>
+            Reakcja bota na wiadoość
+            </summary>
+            <param name="s">
+            Message on discord server/guild
+            </param>
+            <returns>
+            Task object
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Config">
+            <summary>
+            Klasa odpowiedzialna za konfigurację bota
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Config.ConfigFolder">
+            <summary>
+            Folder pliku config
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Config.ConfigFile">
+            <summary>
+            Nazwa pliku konfiguracyjnego
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Config.bot">
+            <summary>
+            Instancja struktury konfiguracji bota
+            </summary>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Categories">
+            <summary>
+            Klasa odpowiedzialna za zarządznie kategoriami
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Categories.GetCategory(System.Int32,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Znajdź z listy kategorię o numerze id: id
+            </summary>
+            <param name="id">
+            identyfikator kategorii którą należy znaleźć
+            </param>
+            <param name="categories">
+            Lista wszystkich kategorii dostępnych na serwerze
+            </param>
+            <returns>
+            Znalezioną kategorię
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Categories.CreateCategory(System.String,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Stwórz nową kategorię
+            </summary>
+            <param name="name">
+            Nazwa nowej kategorii
+            </param>
+            <param name="categories">
+            Lista wszystkich kategorii dostępnych na serwerze
+            </param>
+            <returns>
+            Nowo utworzoną kategorię
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Categories.CategoryExists(System.String,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Sprawdź, czy kategoria o takiej nazwie istnieje
+            </summary>
+            <param name="name">
+            Nazwa nowej kategorii
+            </param>
+            <param name="categories">
+            Lista wszystkich kategorii dostępnych na serwerze
+            </param>
+            <returns>
+            Czy kategoria istnieje
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Guilds">
+            <summary>
+            Klasa odpowiedzialna za zarządzanie danymi o serwerze.
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Core.Guilds.FilePath">
+            <summary>
+            Ścieżka do pliku z bazą danych
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Core.Guilds._guilds">
+            <summary>
+            Lista wszystkich serwerów obsługiwanych przez bota
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Core.Guilds._storage">
+            <summary>
+            Obiekt umożliwiający zapis i odczyt danych
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Guilds.#cctor">
+            <summary>
+            Konstruktor
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Guilds.Save">
+            <summary>
+            Zapisz dane o serwerach w bazie
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Guilds.GetGuild(System.UInt64)">
+            <summary>
+            Znajdź dane o serwerze
+            </summary>
+            <param name="id">
+            Discordowe id serwera
+            </param>
+            <returns>
+            Obiekt zawierający wszystkie potrzebne dane o serwerze
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Guilds.GetOrCreateGuild(System.UInt64)">
+            <summary>
+            Znajdź lub stwórz (jeśli nie istnieje) obiekt z danymi o serwerze
+            </summary>
+            <param name="id">
+            Discordowe id serwera
+            </param>
+            <returns>
+            Obiekt zawierający wszystkie potrzebne dane o serwerze
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Guilds.CreateGuild(System.UInt64)">
+            <summary>
+            Stwórz obiekt z danymi o serwerze
+            </summary>
+            <param name="id">
+            Discordowe id serwera
+            </param>
+            <returns>
+            Nowo utworzony obiekt zawierający wszystkie potrzebne dane o serwerze
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Objects.Category">
+            <summary>
+            Klasa reprezentuje kategorie pytań i opracowań dostępnych na serwerze
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Category.Id">
+            <summary>
+            Numer identyfikacyjny kategorii
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Category.Name">
+            <summary>
+            Nazwa kategorii
+            </summary>
+            <remarks>
+            Unikalna nazwa
+            </remarks>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Category.ProblemCovers">
+            <summary>
+            Lista opracowań problemów dla tej kategorii
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Category.Questions">
+            <summary>
+            Lista pytań dostępnych dla tej kategorii
+            </summary>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Objects.Guild">
+            <summary>
+            Klasa reprezentująca serwer discorda (gildię). Zawierająca listę kategorii oraz kont użytkowników.
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Guild.Id">
+            <summary>
+            Discordowy identyfikator serwera
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Guild.Categories">
+            <summary>
+            Lista kategorii dostępnych na serwerze
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Guild.UserAccounts">
+            <summary>
+            Lista kont użytkowników
+            </summary>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Objects.ProblemCover">
+            <summary>
+            Klasa reprezentująca opracowanie problemu.
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.ProblemCover.Id">
+            <summary>
+            Identyfikator opracowania
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.ProblemCover.Title">
+            <summary>
+            Tytuł opracowania
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.ProblemCover.Description">
+            <summary>
+            Opis opracowania
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.ProblemCover.ImageURL">
+            <summary>
+            Ewentualny link do zdjęcia oprazującego problem
+            </summary>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Objects.Question">
+            <summary>
+            Klasa reprezentująca pytania
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Question.Id">
+            <summary>
+            identyfikator pytania
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Question.Description">
+            <summary>
+            Opis pytania
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Question.PossibleAnswers">
+            <summary>
+            Lista możliwych odpowiedzi na pytanie
+            </summary>
+            <remarks>
+            Maksymalnie 20.
+            Lista wszystkich możliwych dostępna jest pod: LoremIpsumBot.Util (odpowiednia funkcja konwertuje string na obiekt Emoji)
+            </remarks>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Question.RightAnswer">
+            <summary>
+            Indeks prawidłowej odpowiedzi do pytania
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.Question.ImageURL">
+            <summary>
+            Ewentualny link do obrazka obrazującego problem w pytaniu
+            </summary>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Objects.UserAccount">
+            <summary>
+            Klasa reprezentuje konto użytkownika
+            </summary>
+            <remarks>
+            Konto użytkownika jest zależne od serwera z jakiego korzysta
+            </remarks>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.UserAccount.UserId">
+            <summary>
+            Discordowy identyfikator użytkownika
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.UserAccount.SeenQuestionsIds">
+            <summary>
+            Lista id pytań, które użytkownik już widział.
+            </summary>
+            <remarks>
+            Używane przy próbie znalezienia niewidzianego wcześniej pytania oraz popraw wyniku.
+            </remarks>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.UserAccount.WrongAnswersQuestionIds">
+            <summary>
+            Lista id pytań na które użytkownik odpowiedział nieprawidłowo.
+            </summary>
+            <remarks>
+            Używane przy poprawach wyniku.
+            </remarks>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.UserAccount.CategoryComplition">
+            <summary>
+            Ilość poprawnych odpowiedzi ze względu na kategorie z której pochodziły pytania.
+            </summary>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Objects.UserFeedback">
+            <summary>
+            Klasa reprezentująca ocenę urzytkownika
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.UserFeedback.UserId">
+            <summary>
+            Discordowy identyfikator osoby pozostawiający ocenę
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.UserFeedback.IsPositive">
+            <summary>
+            Czy ocane jest pozytywna
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Core.Objects.UserFeedback.Description">
+            <summary>
+            Opis oceny
+            </summary>
+        </member>
+        <member name="T:QuizDiscordBot.Core.ProblemCovers">
+            <summary>
+            Klasa odpowiedzialna za zarządzanie opracowaniami problemów
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.ProblemCovers.GetProblemCover(System.Int32,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Znajdź opracowanie problemu.
+            </summary>
+            <param name="id">
+            Id opracowania, które należy znaleźć.
+            </param>
+            <param name="categories">
+            Lista wszystkich dostępnych na serwerze kategorii
+            </param>
+            <returns>
+            Znalezione opracowanie problemu
+            </returns>
+            <remarks>
+            Może zwrócić null jeśli nie znajdzie opracowania.
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Core.ProblemCovers.CreateProblemCover(System.String,System.String,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category},System.String)">
+            <summary>
+            Stwórz nowe opracowanie
+            </summary>
+            <param name="title">
+            Tytuł opracowania
+            </param>
+            <param name="description">
+            Opis opracowania
+            </param>
+            <param name="categories">
+            Lista wszystkich dostępnych na serwerze kategorii
+            </param>
+            <param name="imageURL">
+            Ewentualny link do zdjęcia obrazującego problem
+            </param>
+            <returns>
+            Stworzone opacowanie
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Core.Questions">
+            <summary>
+            Klasa odpowiedzialna za zarządznie pytaniami
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Questions.GetQuestion(System.Int32,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Znajdź pytanie
+            </summary>
+            <param name="id">
+            Id pytania do znalezienia
+            </param>
+            <param name="categories">
+            Lista wszystkich kategorii dostępnych na serwerze.
+            </param>
+            <returns>
+            Znalezione pytanie
+            </returns>
+            <remarks>
+            Może zwracać null jeśli nie zostanie znalezione
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Core.Questions.CreateQuestion(System.String,System.Int32,System.Collections.Generic.List{System.String},System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category},System.String)">
+            <summary>
+            Stwórz nowe pytanie
+            </summary>
+            <param name="description">
+            Treść pytanie
+            </param>
+            <param name="rightAnswer">
+            Indeks poprawnej odpowiedzi
+            </param>
+            <param name="possibleAnswers">
+            Lista możliwych odpowiedzi
+            </param>
+            <param name="categories">
+            Wszystkie kategorie na serwerze
+            </param>
+            <param name="imageURL">
+            Ewentualny link do zdjęcia obrazującego pytanie
+            </param>
+            <returns>
+            Nowo stworzone pytanie
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Core.UserAccounts">
+            <summary>
+            Klasa odpowiedzialna za zarządzanie kontami użytkowników
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserAccounts.GetUserAccount(System.UInt64,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.UserAccount},System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Znajdź konto użytkownika
+            </summary>
+            <param name="id">
+            Discordowy identyfikator użytkownika
+            </param>
+            <param name="accounts">
+            Lista wszystkich kont użytkowników dostępnych na serwerze
+            </param>
+            <param name="categories">
+            Lista wszystkich dostępnych na serwerze kategorii
+            </param>
+            <returns>
+            Znalezione konto użytkownika
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserAccounts.GetOrCreateUserAccount(System.UInt64,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.UserAccount},System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Znajdź lub stwórz konto użytkownika
+            </summary>
+            <param name="id">
+            Discordowy identyfikator użytkownika
+            </param>
+            <param name="accounts">
+            Lista wszystkich kont użytkowników dostępnych na serwerze
+            </param>
+            <param name="categories">
+            Lista wszystkich dostępnych na serwerze kategorii
+            </param>
+            <returns>
+            Znalezione konto użytkownika
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserAccounts.CreateUserAccount(System.UInt64,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.UserAccount},System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Stwórz konto użytkownika
+            </summary>
+            <param name="id">
+            Discordowy identyfikator użytkownika
+            </param>
+            <param name="accounts">
+            Lista wszystkich kont użytkowników dostępnych na serwerze
+            </param>
+            <param name="categories">
+            Lista wszystkich dostępnych na serwerze kategorii
+            </param>
+            <returns>
+            Nowo utworzone konto użytkownika
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserAccounts.CalculateTotalPointsOfUser(QuizDiscordBot.Core.Objects.UserAccount)">
+            <summary>
+            Podlicz wszystkie punkty z kategorii
+            </summary>
+            <param name="user">
+            Konto użytkownika
+            </param>
+            <returns>
+            Wszystkie punkty zdobyte przez użytkownika
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Core.UserFeedbacks">
+            <summary>
+            Klasa odpowiedzialna za zarządzanie ocanami użytkowników
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Core.UserFeedbacks.FilePath">
+            <summary>
+            Ścieżka do pliku z bazą danych
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Core.UserFeedbacks._userFeedbacks">
+            <summary>
+            Lista wszystkich ocen użytkowników
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Core.UserFeedbacks._storage">
+            <summary>
+            Obiekt umożliwiający zapis i odczyt danych
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserFeedbacks.#cctor">
+            <summary>
+            Konstruktor
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserFeedbacks.Save">
+            <summary>
+            Zapisz dane o ocenach w bazie
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserFeedbacks.GetUserFeedback(System.UInt64)">
+            <summary>
+            Znajdź ocenę użytkoenika
+            </summary>
+            <param name="userId">
+            Discordowe id autora
+            </param>
+            <returns>
+            Znalezioną ocenę użytkownika
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserFeedbacks.GetOrCreateUserFeedback(System.UInt64)">
+            <summary>
+            Znajdź lub stwórz ocenę użytkownika
+            </summary>
+            <param name="userId">
+            Discordowe id autora
+            </param>
+            <returns>
+            Znalezioną ocenę użytkownika
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Core.UserFeedbacks.CreateUserFeedback(System.UInt64)">
+            <summary>
+            Stwórz nową ocenę
+            </summary>
+            <param name="userId">
+            Discordowe id autora
+            </param>
+            <returns>
+            Nowo stworzoną ocenę użytkowika.
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Modules.Commands">
+            <summary>
+            Klasa z zarejestrwanymi komendami
+            </summary>
+            <remarks>
+            Według konwencji komendy powinny być publicznymi asynchronicznymi zadaniami pomimo ostrzeżeń IDE
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.GiveFeedback(System.Boolean,System.String)">
+            <summary>
+            Komenda do pozostawienia oceny bota
+            </summary>
+            <param name="isPositive">
+            Czy bot się podobał i spełnił swoje zadanie
+            </param>
+            <param name="description">
+            Opis oceny
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.CreateCategory">
+            <summary>
+            Stwórz kategorię dla pytań i problemów
+            </summary>
+            <returns></returns>
+            <remarks>
+            Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze (gildii)
+            
+            Schemat działania:
+            0. START - użytkownik wpisał komendę
+            1. Sprawdza czy użytkownik jest uprawniony do wywołania komendy
+                1a. Jeśli jest:
+                    1a.1. Sprawdza czy gildia istnieje w bazie danych
+                        1a.1a. Jeśli nie:
+                            1a.1a.1. Tworzy nową gildię
+                            1a.1a.2. Dodaje ją do bazy danych gildii
+                            1a.1a.3. Zapisuje zmiany do bazy danych
+                            1a.1a.4. Przekazuje dalej dane
+                        1a.1b. Jeśli tak:
+                            1a.1b.1. Pobiera dane o gildii
+                    1a.2. Pobiera wszystkie dosyępne w gildii kategorie
+                    1a.3. Wysyła do użytkownika informacje o istniejących kategoriach
+                    1a.4. Oczekuje na reakcję użytkownika z nazwą nowej kategorii
+                        1a.4a. Jeśli nie nadejdzie:
+                            1a.4a.1. Poinformuje użytkownika o błędzie
+                            1a.4a.2. Wstrzymuje proces
+                            1a.4a.3. KONIEC - algorytm nie otrzymał wymaganej informacji od użytkownika
+                        1a.4b. Jeśli nadejdzie:
+                            1a.4b.1. Sprawdzi czy kategoria o podanej przez użytkownika nazwie istnieje
+                                1a.4b.1a. Jeśli istnieje:
+                                    1a.4b.1a.1. Poinformuje użytkownika o błędzie
+                                    1a.4b.1a.2. Wstrzymuje proces
+                                    1a.4b.1a.3. KONIEC - kategoria już istnieje
+                                1a.4b.1b. Jeśli nie istnieje:
+                                    1a.4b.1b.1. Stworzy nową kategorię
+                                    1a.4b.1b.2. Dodaje kategorię do bazy danych
+                                    1a.4b.1b.3. Zapisuje zmiany do bazy danych
+                                    1a.4b.1b.4. KONIEC - sukces, kategoria została dodana
+                1b. Jeśli nie jest:
+                    1b.1. Wypisuje informacje o nadużyciu
+                    1b.2. KONIEC - użytkownik nie uprawniony
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.CreateQuestion">
+            <summary>
+            Stwórz pytanie
+            </summary>
+            <returns></returns>
+            <remarks>
+            Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.CreateProblemCover">
+            <summary>
+            Stwórz opracowanie dla problemu
+            </summary>
+            <returns></returns>
+            <remarks>
+            Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.GetProblemCover(System.Int32)">
+            <summary>
+            Wyślij użytkownikowi opracowanie zagadnienia
+            </summary>
+            <param name="id">
+            Id opracowania
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.GetQuestion(System.Int32)">
+            <summary>
+            Zadaj użytkownikowi pytanie
+            </summary>
+            <param name="id">
+            numer pytania
+            </param>
+            <returns></returns>
+            <remarks>
+            jeśli użytkownik nie poda id pytania, bot podejmie próbę wylosowania pytania, którego użytkownik jeszcze nie widział.
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.SaveChanges(Discord.WebSocket.ISocketMessageChannel)">
+            <summary>
+            Zapisz zmiany do bazy danych
+            </summary>
+            <param name="channel">
+            Kanał na który należy wysłać informacje o zapisaniu zmian w bazie
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.NotifyAboutResult(System.Boolean,Discord.WebSocket.ISocketMessageChannel)">
+            <summary>
+            Poinformuj o wyniku
+            </summary>
+            <param name="goodAnswer">
+            Czy odpowiedź była prawidłowa
+            </param>
+            <param name="channel">
+            Kanał na którym trzeba poinformować użytkownika o wyniku
+            </param>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.CheckScore(System.Boolean,System.Boolean,System.Int32,System.Int32,QuizDiscordBot.Core.Objects.UserAccount,Discord.WebSocket.ISocketMessageChannel)">
+            <summary>
+            Sprawdź i oceń odpowiedź użytkownika
+            </summary>
+            <param name="wasSeen">
+            Czy użytkownik widział to pytanie
+            </param>
+            <param name="goodAnswer">
+            Czy użytkownik odpowiedział poprawnie na pytanie
+            </param>
+            <param name="id">
+            Id pytania
+            </param>
+            <param name="categoryId">
+            Id kategorii
+            </param>
+            <param name="userAccount">
+            Konto użytkownika
+            </param>
+            <param name="channel">
+            Kanał na który należy poinformować użytkownika o wyniku
+            </param>
+            <returns></returns>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.GetCategoryContainingQuestionId(System.Int32,System.Collections.Generic.List{QuizDiscordBot.Core.Objects.Category})">
+            <summary>
+            Znajdź kategorie zawierającą pytanie
+            </summary>
+            <param name="id">
+            Id pytania
+            </param>
+            <param name="categories">
+            Kategorie obecne na serwerze
+            </param>
+            <returns>
+            Id kategorii która zawiera pytanie
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.Status(Discord.WebSocket.SocketGuildUser)">
+            <summary>
+            Sprawdź postępu użytkownika
+            </summary>
+            <param name="user">
+            Użytkownik discorda
+            </param>
+            <returns></returns>
+        </member>
+        <member name="T:QuizDiscordBot.Program">
+            <summary>
+            Algorytm ułatwiający naukę z dowolnej dziedziny, zaimplementowany w bota discordowego.
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Program._client">
+            <summary>
+            Obiekt odpowiedzialny za obsługę konta bota na discordzie
+            </summary>
+        </member>
+        <member name="F:QuizDiscordBot.Program._handler">
+            <summary>
+            Instancja klasy odpowiedzialnej za reakcje na komendy
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Program.Main">
+            <summary>
+            Main
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Program.RunBotAsync">
+            <summary>
+            Asynchroniczne zadanie uruchamiające bota
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:QuizDiscordBot.Program.InitializationClient">
+            <summary>
+            Przygotuj bota do pracy
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:QuizDiscordBot.Program.LoginAsync">
+            <summary>
+            Zaloguj bota na serwer
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:QuizDiscordBot.Program.HandlerInitialize">
+            <summary>
+            Przygotuj obsługę komend
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:QuizDiscordBot.Program.InitializationLogs">
+            <summary>
+            Przygotuj logi
+            </summary>
+            <returns>
+            Task object
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Program.BotLog(Discord.LogMessage)">
+            <summary>
+            Wypisz wiadomość logu w konsoli
+            </summary>
+            <param name="msg">
+            LogMessage object used for logging purposes
+            </param>
+            <returns>
+            Task object
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Storage.IStorage">
+            <summary>
+            Interface do obsługi zapisów i odczytów
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Storage.IStorage.RestoreObject``1(System.String)">
+            <summary>
+            Wczytaj obiekt typu T.
+            </summary>
+            <typeparam name="T">
+            Typ obiektu wczytywanego z pliku
+            </typeparam>
+            <param name="filePath">
+            Ścieżka do pliku
+            </param>
+            <returns>
+            Obiekt typu T z pliku pod ścieżką filepath
+            </returns>
+        </member>
+        <member name="M:QuizDiscordBot.Storage.IStorage.StoreObject(System.Object,System.String)">
+            <summary>
+            Zapisz obiekt w pliku
+            </summary>
+            <param name="obj">
+            Obiekt do zapisania
+            </param>
+            <param name="filePath">
+            Ścieżka do pliku
+            </param>
+        </member>
+        <member name="M:QuizDiscordBot.Storage.IStorage.FileExist(System.String)">
+            <summary>
+            Sprawdź czy istnieje plik pod ścieżką filepath
+            </summary>
+            <param name="filePath">
+            Ścieżka do pliku
+            </param>
+            <returns>
+            true - jeśli istnieje i vice versa
+            </returns>
+        </member>
+        <member name="T:QuizDiscordBot.Storage.JsonStorage">
+            <summary>
+            Klasa do obsługi zapisów i odczytów w plikach .json
+            </summary>
+        </member>
+        <member name="M:QuizDiscordBot.Storage.JsonStorage.RestoreObject``1(System.String)">
+            <summary>
+            Wczytaj obiekt typu T z pliku JSON.
+            </summary>
+            <typeparam name="T">
+            Typ obiektu wczytywanego z pliku
+            </typeparam>
+            <param name="filePath">
+            Ścieżka do pliku bez rozszerzenia
+            </param>
+            <returns>
+            Obiekt typu T z pliku pod ścieżką filepath
+            </returns>
+            <remarks>
+            Rozszerzenie .json należy pominąć przy wywoływaniu metody
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Storage.JsonStorage.StoreObject(System.Object,System.String)">
+            <summary>
+            Zapisz obiekt w pliku
+            </summary>
+            <param name="obj">
+            Obiekt do zapisania
+            </param>
+            <param name="filePath">
+            Ścieżka do pliku bez rozszerzenia
+            </param>
+            <remarks>
+            Rozszerzenie .json należy pominąć przy wywoływaniu metody
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Storage.JsonStorage.FileExist(System.String)">
+            <summary>
+            Sprawdź czy istnieje plik pod ścieżką filepath
+            </summary>
+            <param name="filePath">
+            Ścieżka do pliku bez rozszerzenia
+            </param>
+            <returns>
+            true - jeśli istnieje i vice versa
+            </returns>
+            <remarks>
+            Rozszerzenie .json należy pominąć przy wywoływaniu metody
+            </remarks>
+        </member>
+        <member name="T:QuizDiscordBot.Util">
+            <summary>
+            Klasa narzędzi urzywanych w innych miejscach w programie
+            </summary>
+        </member>
+        <member name="P:QuizDiscordBot.Util.AnswersEmojis">
+            <summary>
+            Lista emotek oznaczających możliwe odpowiedzi
+            </summary>
+            <remarks>
+            Odgórny limit Discord: 20 emotek
+            </remarks>
+        </member>
+    </members>
+</doc>

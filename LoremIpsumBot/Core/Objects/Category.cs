@@ -15,6 +15,9 @@ namespace QuizDiscordBot.Core.Objects
         /// <summary>
         /// Nazwa kategorii
         /// </summary>
+        /// <remarks>
+        /// Unikalna nazwa
+        /// </remarks>
         public string Name { get; set; }
 
         /// <summary>

@@ -23,9 +23,9 @@ namespace QuizDiscordBot.Storage
         /// <remarks>
         /// Rozszerzenie .json należy pominąć przy wywoływaniu metody
         /// </remarks>
-        public T RestoreObject<T>(string filepath)
+        public T RestoreObject<T>(string filePath)
         {
-            string json = File.ReadAllText($"{filepath}.json");
+            string json = File.ReadAllText($"{filePath}.json");
             return JsonConvert.DeserializeObject<T>(json);
         }
 
@@ -41,9 +41,9 @@ namespace QuizDiscordBot.Storage
         /// <remarks>
         /// Rozszerzenie .json należy pominąć przy wywoływaniu metody
         /// </remarks>
-        public void StoreObject(object obj, string filepath)
+        public void StoreObject(object obj, string filePath)
         {
-            string file = $"{filepath}.json";
+            string file = $"{filePath}.json";
 
             string json = JsonConvert.SerializeObject(obj, Formatting.Indented);
 
@@ -62,9 +62,9 @@ namespace QuizDiscordBot.Storage
         /// <remarks>
         /// Rozszerzenie .json należy pominąć przy wywoływaniu metody
         /// </remarks>
-        public bool FileExist(string filepath)
+        public bool FileExist(string filePath)
         {
-            return File.Exists($"{filepath}.json");
+            return File.Exists($"{filePath}.json");
         }
     }
 }
