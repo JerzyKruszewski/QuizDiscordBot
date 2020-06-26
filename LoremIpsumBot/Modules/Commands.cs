@@ -29,6 +29,21 @@ namespace QuizDiscordBot.Modules
         /// Opis oceny
         /// </param>
         /// <returns></returns>
+        /// <remarks>
+        /// Schemat działania:
+        /// 0. START - użytkownik wpisał komendę
+        /// 1. Sprawdza czy ocena istnieje w bazie danych
+        ///     1a. Jeśli nie:
+        ///         1a.1. Tworzy nową ocenę z domyślnymi wartościami
+        ///         1a.2. Dodaje ją do bazy danych ocen
+        ///         1a.3. Zapisuje zmiany do bazy danych
+        ///         1a.4. Przekazuje dalej dane
+        ///     1b. Jeśli tak:
+        ///         1b.1. Pobiera dane o ocene
+        /// 2. Aktualizuje ocenę użytkownika
+        /// 3. Zapisuje zmiany do bazy danych
+        /// 4. KONIEC - sukces, pomyślnie oceniono pracę algorytmu
+        /// </remarks>
         [Command("give feedback")]
         public async Task GiveFeedback(bool isPositive, [Remainder]string description)
         {
@@ -44,309 +59,34 @@ namespace QuizDiscordBot.Modules
         }
 
         /// <summary>
-        /// Stwórz kategorię dla pytań i problemów
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>
-        /// Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze (gildii)
-        /// 
-        /// Schemat działania:
-        /// 0. START - użytkownik wpisał komendę
-        /// 1. Sprawdza czy użytkownik jest uprawniony do wywołania komendy
-        ///     1a. Jeśli jest:
-        ///         1a.1. Sprawdza czy gildia istnieje w bazie danych
-        ///             1a.1a. Jeśli nie:
-        ///                 1a.1a.1. Tworzy nową gildię
-        ///                 1a.1a.2. Dodaje ją do bazy danych gildii
-        ///                 1a.1a.3. Zapisuje zmiany do bazy danych
-        ///                 1a.1a.4. Przekazuje dalej dane
-        ///             1a.1b. Jeśli tak:
-        ///                 1a.1b.1. Pobiera dane o gildii
-        ///         1a.2. Pobiera wszystkie dosyępne w gildii kategorie
-        ///         1a.3. Wysyła do użytkownika informacje o istniejących kategoriach
-        ///         1a.4. Oczekuje na reakcję użytkownika z nazwą nowej kategorii
-        ///             1a.4a. Jeśli nie nadejdzie:
-        ///                 1a.4a.1. Poinformuje użytkownika o błędzie
-        ///                 1a.4a.2. Wstrzymuje proces
-        ///                 1a.4a.3. KONIEC - algorytm nie otrzymał wymaganej informacji od użytkownika
-        ///             1a.4b. Jeśli nadejdzie:
-        ///                 1a.4b.1. Sprawdzi czy kategoria o podanej przez użytkownika nazwie istnieje
-        ///                     1a.4b.1a. Jeśli istnieje:
-        ///                         1a.4b.1a.1. Poinformuje użytkownika o błędzie
-        ///                         1a.4b.1a.2. Wstrzymuje proces
-        ///                         1a.4b.1a.3. KONIEC - kategoria już istnieje
-        ///                     1a.4b.1b. Jeśli nie istnieje:
-        ///                         1a.4b.1b.1. Stworzy nową kategorię
-        ///                         1a.4b.1b.2. Dodaje kategorię do bazy danych
-        ///                         1a.4b.1b.3. Zapisuje zmiany do bazy danych
-        ///                         1a.4b.1b.4. KONIEC - sukces, kategoria została dodana
-        ///     1b. Jeśli nie jest:
-        ///         1b.1. Wypisuje informacje o nadużyciu
-        ///         1b.2. KONIEC - użytkownik nie uprawniony
-        /// </remarks>
-        [Command("CreateCategory", RunMode = RunMode.Async)]
-        [Alias("cc")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task CreateCategory()
-        {
-            // Get server information (questions, user accounts, etc.)
-            Guild guild = Guilds.GetGuild(Context.Guild.Id);
-
-            // Get all existing categories
-            string msg = "Guild Category List:\n";
-
-            foreach (Category category in guild.Categories)
-            {
-                msg += $"{category.Id} - {category.Name} ({category.ProblemCovers.Count}/{category.Questions.Count})\n";
-            }
-            
-            msg += "\nPodaj nazwę nowej kategorii:";
-            
-            // Send return message
-            await Context.Channel.SendMessageAsync(msg);
-
-            // Wait 2 min for message from source user with category name
-            SocketMessage message = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-            // check if user send next message
-            if (message == null)
-            {
-                await Context.Channel.SendMessageAsync("Wstrzymano dodawanie kategorii.");
-                return;
-            }
-
-            // Create new category
-            Category newCategory = Categories.CreateCategory(message.Content, guild.Categories);
-
-            if (newCategory == null)
-            {
-                await Context.Channel.SendMessageAsync("Kategoria istnieje. Wstrzymano dodawanie kategorii.");
-                return;
-            }
-
-            // Add category to server informations
-            guild.Categories.Add(newCategory);
-
-            // Save server informations with new category
-            Guilds.Save();
-        }
-
-        /// <summary>
-        /// Stwórz pytanie
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>
-        /// Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze
-        /// </remarks>
-        [Command("CreateQuestion", RunMode = RunMode.Async)]
-        [Alias("cq")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task CreateQuestion()
-        {
-            try
-            {
-                Guild guild = Guilds.GetGuild(Context.Guild.Id);
-
-                string msg = "Guild Category List:\n";
-
-                foreach (Category category in guild.Categories)
-                {
-                    msg += $"{category.Id} - {category.Name} ({category.ProblemCovers.Count}/{category.Questions.Count})\n";
-                }
-
-                msg += "\nPodaj indeks kategorii:";
-
-                await Context.Channel.SendMessageAsync(msg);
-
-                SocketMessage massageWithCategoryId = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (massageWithCategoryId == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                Category desiredCategory = guild.Categories.SingleOrDefault(x => x.Id == Int32.Parse(massageWithCategoryId.Content.Trim()));
-
-                if (desiredCategory == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie znaleziono kategorii. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                await ReplyAsync("Podaj treść pytania:");
-
-                SocketMessage messageWithQuestionDescription = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (messageWithQuestionDescription == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                string description = messageWithQuestionDescription.Content;
-
-                await ReplyAsync("Podaj możliwe odpowiedzi, oddziel je |");
-
-                SocketMessage messageWithAllPossibleAnswers = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (messageWithAllPossibleAnswers == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                List<string> allPossibleAnswers = messageWithAllPossibleAnswers.Content.Split('|').ToList();
-
-                int i = 0;
-                string message = "";
-
-                foreach (string possibleAnswer in allPossibleAnswers)
-                {
-                    message += $"{i} - {possibleAnswer}\n";
-                    i++;
-                }
-
-                await ReplyAsync($"{message}\n\nPodaj indeks prawidłowej odpowiedzi:");
-
-                SocketMessage messageWithRightAnswer = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (messageWithRightAnswer == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                int rightAnswer = Int32.Parse(messageWithRightAnswer.Content.Trim());
-
-                if (rightAnswer < 0 || rightAnswer >= allPossibleAnswers.Count)
-                {
-                    await ReplyAsync("Niewłaściwy format. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                await ReplyAsync("Podaj URL zdjęcia do pytania (zignoruj tą wiadomość przez min, aby nic nie dodawać):");
-
-                string imageURL = null;
-
-                SocketMessage messageWithImageUrl = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (messageWithImageUrl != null)
-                {
-                    imageURL = messageWithImageUrl.Content;
-                }
-
-                Question newQuestion = Questions.CreateQuestion(description, rightAnswer, allPossibleAnswers, guild.Categories, imageURL);
-
-                desiredCategory.Questions.Add(newQuestion);
-
-                Guilds.Save();
-            }
-            catch (Exception)
-            {
-                await ReplyAsync("Niewłaściwy format. Wstrzymano dodawanie pytania.");
-                return;
-            }
-        }
-
-        /// <summary>
-        /// Stwórz opracowanie dla problemu
-        /// </summary>
-        /// <returns></returns>
-        /// <remarks>
-        /// Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze
-        /// </remarks>
-        [Command("CreateProblemCover", RunMode = RunMode.Async)]
-        [Alias("cpc")]
-        [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task CreateProblemCover()
-        {
-            try
-            {
-                Guild guild = Guilds.GetGuild(Context.Guild.Id);
-
-                string msg = "Guild Category List:\n";
-
-                foreach (Category category in guild.Categories)
-                {
-                    msg += $"{category.Id} - {category.Name} ({category.ProblemCovers.Count}/{category.Questions.Count})\n";
-                }
-
-                msg += "\nPodaj indeks kategorii:";
-
-                await Context.Channel.SendMessageAsync(msg);
-
-                SocketMessage massageWithCategoryId = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (massageWithCategoryId == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                Category desiredCategory = guild.Categories.SingleOrDefault(x => x.Id == Int32.Parse(massageWithCategoryId.Content.Trim()));
-
-                if (desiredCategory == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie znaleziono kategorii. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                await ReplyAsync("Podaj tytuł problemu:");
-
-                SocketMessage messageWithProblemTitle = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (messageWithProblemTitle == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                string title = messageWithProblemTitle.Content;
-
-                await ReplyAsync("Podaj treść opracowania:");
-
-                SocketMessage messageWithProblemDescription = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (messageWithProblemDescription == null)
-                {
-                    await Context.Channel.SendMessageAsync("Nie otrzymano informacji zwrotnej. Wstrzymano dodawanie pytania.");
-                    return;
-                }
-
-                string description = messageWithProblemDescription.Content;
-
-                await ReplyAsync("Podaj URL zdjęcia do opracowania (zignoruj tą wiadomość przez min, aby nic nie dodawać):");
-
-                string imageURL = null;
-
-                SocketMessage messageWithImageUrl = await NextMessageAsync(true, true, TimeSpan.FromMinutes(2));
-
-                if (messageWithImageUrl != null)
-                {
-                    imageURL = messageWithImageUrl.Content;
-                }
-
-                ProblemCover problem = ProblemCovers.CreateProblemCover(title, description, guild.Categories, imageURL);
-
-                desiredCategory.ProblemCovers.Add(problem);
-
-                Guilds.Save();
-            }
-            catch (Exception)
-            {
-                await ReplyAsync("Niewłaściwy format. Wstrzymano dodawanie pytania.");
-                return;
-            }
-        }
-
-        /// <summary>
         /// Wyślij użytkownikowi opracowanie zagadnienia
         /// </summary>
         /// <param name="id">
         /// Id opracowania
         /// </param>
         /// <returns></returns>
+        /// <remarks>
+        /// Schemat działania:
+        /// 0. START - użytkownik wpisał komendę
+        /// 1. Sprawdza czy gildia istnieje w bazie danych
+        ///     1a. Jeśli nie:
+        ///         1a.1. Tworzy nową gildię
+        ///         1a.2. Dodaje ją do bazy danych gildii
+        ///         1a.3. Zapisuje zmiany do bazy danych
+        ///         1a.4. Przekazuje dalej dane
+        ///     1b. Jeśli tak:
+        ///         1b.1. Pobiera dane o gildii
+        /// 2. Pobiera dostępne w gildii kategorie
+        /// 3. Wyszukuje opracowanie w kategoriach
+        ///     3a. Jeśli nie ma takiego opracowania
+        ///         3a.1. KONIEC - nie znaleziono opracowania
+        /// 4. Tworzy sformatowaną wiadomość
+        /// 5. Sprawdza czy opracowanie posiada informację o obrazku
+        ///     5a. Jeśli tak:
+        ///         5a.1. Dodaje do wiadomości obrazek
+        /// 6. Wyświetla opracowanie
+        /// 7. KONIEC - sukces, wyświetlono opracowanie
+        /// </remarks>
         [Command("GetProblemCover")]
         [Alias("gpc")]
         public async Task GetProblemCover(int id)
@@ -605,6 +345,9 @@ namespace QuizDiscordBot.Modules
         /// Użytkownik discorda
         /// </param>
         /// <returns></returns>
+        /// <remarks>
+        /// 
+        /// </remarks>
         [Command("Status")]
         public async Task Status(SocketGuildUser user = null)
         {

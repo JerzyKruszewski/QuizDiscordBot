@@ -577,27 +577,12 @@
             Nowo stworzoną ocenę użytkowika.
             </returns>
         </member>
-        <member name="T:QuizDiscordBot.Modules.Commands">
+        <member name="T:QuizDiscordBot.Modules.AdminCommands">
             <summary>
-            Klasa z zarejestrwanymi komendami
+            Komendy dla osób uprawnionych do zarządzania algorytmem
             </summary>
-            <remarks>
-            Według konwencji komendy powinny być publicznymi asynchronicznymi zadaniami pomimo ostrzeżeń IDE
-            </remarks>
         </member>
-        <member name="M:QuizDiscordBot.Modules.Commands.GiveFeedback(System.Boolean,System.String)">
-            <summary>
-            Komenda do pozostawienia oceny bota
-            </summary>
-            <param name="isPositive">
-            Czy bot się podobał i spełnił swoje zadanie
-            </param>
-            <param name="description">
-            Opis oceny
-            </param>
-            <returns></returns>
-        </member>
-        <member name="M:QuizDiscordBot.Modules.Commands.CreateCategory">
+        <member name="M:QuizDiscordBot.Modules.AdminCommands.CreateCategory">
             <summary>
             Stwórz kategorię dla pytań i problemów
             </summary>
@@ -624,38 +609,160 @@
                             1a.4a.1. Poinformuje użytkownika o błędzie
                             1a.4a.2. Wstrzymuje proces
                             1a.4a.3. KONIEC - algorytm nie otrzymał wymaganej informacji od użytkownika
-                        1a.4b. Jeśli nadejdzie:
-                            1a.4b.1. Sprawdzi czy kategoria o podanej przez użytkownika nazwie istnieje
-                                1a.4b.1a. Jeśli istnieje:
-                                    1a.4b.1a.1. Poinformuje użytkownika o błędzie
-                                    1a.4b.1a.2. Wstrzymuje proces
-                                    1a.4b.1a.3. KONIEC - kategoria już istnieje
-                                1a.4b.1b. Jeśli nie istnieje:
-                                    1a.4b.1b.1. Stworzy nową kategorię
-                                    1a.4b.1b.2. Dodaje kategorię do bazy danych
-                                    1a.4b.1b.3. Zapisuje zmiany do bazy danych
-                                    1a.4b.1b.4. KONIEC - sukces, kategoria została dodana
+                    1a.5. Sprawdzi czy kategoria o podanej przez użytkownika nazwie istnieje
+                         1a.5a. Jeśli istnieje:
+                            1a.5a.1. Poinformuje użytkownika o błędzie
+                            1a.5a.2. Wstrzymuje proces
+                            1a.5a.3. KONIEC - kategoria już istnieje
+                    1a.7. Stworzy nową kategorię
+                    1a.8. Dodaje kategorię do bazy danych
+                    1a.9. Zapisuje zmiany do bazy danych
+                    1a.10. KONIEC - sukces, kategoria została dodana
                 1b. Jeśli nie jest:
                     1b.1. Wypisuje informacje o nadużyciu
                     1b.2. KONIEC - użytkownik nie uprawniony
             </remarks>
         </member>
-        <member name="M:QuizDiscordBot.Modules.Commands.CreateQuestion">
+        <member name="M:QuizDiscordBot.Modules.AdminCommands.CreateQuestion">
             <summary>
             Stwórz pytanie
             </summary>
             <returns></returns>
             <remarks>
             Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze
+            
+            Schemat działania:
+            0. START - użytkownik wpisał komendę
+            1. Sprawdza czy użytkownik jest uprawniony do wywołania komendy
+                1a. Jeśli jest:
+                    1a.1. Sprawdza czy gildia istnieje w bazie danych
+                        1a.1a. Jeśli nie:
+                            1a.1a.1. Tworzy nową gildię
+                            1a.1a.2. Dodaje ją do bazy danych gildii
+                            1a.1a.3. Zapisuje zmiany do bazy danych
+                            1a.1a.4. Przekazuje dalej dane
+                        1a.1b. Jeśli tak:
+                            1a.1b.1. Pobiera dane o gildii
+                    1a.2. Pobiera wszystkie dosyępne w gildii kategorie
+                    1a.3. Wysyła do użytkownika informacje o istniejących kategoriach
+                    1a.4. Oczekuje na reakcję użytkownika z indeksem kategorii
+                        1a.4a. Jeśli nie nadejdzie lub będzie miało nieprawidłowy format:
+                            1a.4a.1. Poinformuje użytkownika o błędzie
+                            1a.4a.2. Wstrzymuje proces
+                            1a.4a.3. KONIEC - algorytm nie otrzymał wymaganej informacji od użytkownika lub nieprawidłowy format
+                    1a.5. Oczekuje na reakcję użytkownika z treścią pytania
+                        1a.5a. Jeśli nie nadejdzie:
+                            1a.5a.1. Poinformuje użytkownika o błędzie
+                            1a.5a.2. Wstrzymuje proces
+                            1a.5a.3. KONIEC - algorytm nie otrzymał wymaganej informacji
+                    1a.6. Oczekuje na reakcję użytkownika z możliwymi odpowiedziami
+                        1a.6a. Jeśli nie nadejdzie:
+                            1a.6a.1. Poinformuje użytkownika o błędzie
+                            1a.6a.2. Wstrzymuje proces
+                            1a.6a.3. KONIEC - algorytm nie otrzymał wymaganej informacji
+                    1a.7. Odczytuje możliwe odpowiedzi z pojedyńczej wiadomości
+                    1a.8. Wysyła do użytkownika informacje o odczytanych możliwych odpowiedziach
+                    1a.9. Oczekuje na reakcję użytkownika z indeksem prawidłowej odpowiedzi
+                        1a.9a. Jeśli nie nadejdzie lub będzie miało nieprawidłowy format lub nie odczytano odpowiedzi o takim indeksie:
+                            1a.9a.1. Poinformuje użytkownika o błędzie
+                            1a.9a.2. Wstrzymuje proces
+                            1a.9a.3. KONIEC - algorytm nie otrzymał wymaganej informacji od użytkownika lub nieprawidłowy format
+                    1a.10. Oczekuje na reakcję użytkownika z linkiem URL do obrazka
+                        1a.10a. Jeśli nadejdzie:
+                            1a.10a.1. Zapisuje informacje o obrazku
+                    1a.11. Sprawdza najniższy dostępny numer identyfikacyjny
+                    1a.12. Tworzy nowe pytanie
+                    1a.13. Dodaje pytanie do bazy danych
+                    1a.14. Zapisuje zmiany do bazy danych
+                    1a.15. KONIEC - sukces, pytanie zostało dodane
+                1b. Jeśli nie jest:
+                    1b.1. Wypisuje informacje o nadużyciu
+                    1b.2. KONIEC - użytkownik nie uprawniony
             </remarks>
         </member>
-        <member name="M:QuizDiscordBot.Modules.Commands.CreateProblemCover">
+        <member name="M:QuizDiscordBot.Modules.AdminCommands.CreateProblemCover">
             <summary>
             Stwórz opracowanie dla problemu
             </summary>
             <returns></returns>
             <remarks>
             Wymaga aby wywołujący komendę miał uprawnienia administratora na serwerze
+            
+            Schemat działania:
+            0. START - użytkownik wpisał komendę
+            1. Sprawdza czy użytkownik jest uprawniony do wywołania komendy
+                1a. Jeśli jest:
+                    1a.1. Sprawdza czy gildia istnieje w bazie danych
+                        1a.1a. Jeśli nie:
+                            1a.1a.1. Tworzy nową gildię
+                            1a.1a.2. Dodaje ją do bazy danych gildii
+                            1a.1a.3. Zapisuje zmiany do bazy danych
+                            1a.1a.4. Przekazuje dalej dane
+                        1a.1b. Jeśli tak:
+                            1a.1b.1. Pobiera dane o gildii
+                    1a.2. Pobiera wszystkie dosyępne w gildii kategorie
+                    1a.3. Wysyła do użytkownika informacje o istniejących kategoriach
+                    1a.4. Oczekuje na reakcję użytkownika z indeksem kategorii
+                        1a.4a. Jeśli nie nadejdzie lub będzie miało nieprawidłowy format:
+                            1a.4a.1. Poinformuje użytkownika o błędzie
+                            1a.4a.2. Wstrzymuje proces
+                            1a.4a.3. KONIEC - algorytm nie otrzymał wymaganej informacji od użytkownika lub nieprawidłowy format
+                    1a.5. Oczekuje na reakcję użytkownika z tytułem opracowania
+                        1a.5a. Jeśli nie nadejdzie:
+                            1a.5a.1. Poinformuje użytkownika o błędzie
+                            1a.5a.2. Wstrzymuje proces
+                            1a.5a.3. KONIEC - algorytm nie otrzymał wymaganej informacji
+                    1a.6. Oczekuje na reakcję użytkownika z trescią opracowania
+                        1a.6a. Jeśli nie nadejdzie:
+                            1a.6a.1. Poinformuje użytkownika o błędzie
+                            1a.6a.2. Wstrzymuje proces
+                            1a.6a.3. KONIEC - algorytm nie otrzymał wymaganej informacji
+                    1a.7. Oczekuje na reakcję użytkownika z linkiem URL do obrazka
+                        1a.7a. Jeśli nadejdzie:
+                            1a.7a.1. Zapisuje informacje o obrazku
+                    1a.8. Sprawdza najniższy dostępny numer identyfikacyjny
+                    1a.9. Tworzy nowe opracowanie
+                    1a.10. Dodaje opracowanie do bazy danych
+                    1a.11. Zapisuje zmiany do bazy danych
+                    1a.12. KONIEC - sukces, pytanie zostało dodane
+                1b. Jeśli nie jest:
+                    1b.1. Wypisuje informacje o nadużyciu
+                    1b.2. KONIEC - użytkownik nie uprawniony
+            </remarks>
+        </member>
+        <member name="T:QuizDiscordBot.Modules.Commands">
+            <summary>
+            Klasa z zarejestrwanymi komendami
+            </summary>
+            <remarks>
+            Według konwencji komendy powinny być publicznymi asynchronicznymi zadaniami pomimo ostrzeżeń IDE
+            </remarks>
+        </member>
+        <member name="M:QuizDiscordBot.Modules.Commands.GiveFeedback(System.Boolean,System.String)">
+            <summary>
+            Komenda do pozostawienia oceny bota
+            </summary>
+            <param name="isPositive">
+            Czy bot się podobał i spełnił swoje zadanie
+            </param>
+            <param name="description">
+            Opis oceny
+            </param>
+            <returns></returns>
+            <remarks>
+            Schemat działania:
+            0. START - użytkownik wpisał komendę
+            1. Sprawdza czy ocena istnieje w bazie danych
+                1a. Jeśli nie:
+                    1a.1. Tworzy nową ocenę z domyślnymi wartościami
+                    1a.2. Dodaje ją do bazy danych ocen
+                    1a.3. Zapisuje zmiany do bazy danych
+                    1a.4. Przekazuje dalej dane
+                1b. Jeśli tak:
+                    1b.1. Pobiera dane o ocene
+            2. Aktualizuje ocenę użytkownika
+            3. Zapisuje zmiany do bazy danych
+            4. KONIEC - sukces, pomyślnie oceniono pracę algorytmu
             </remarks>
         </member>
         <member name="M:QuizDiscordBot.Modules.Commands.GetProblemCover(System.Int32)">
@@ -666,6 +773,28 @@
             Id opracowania
             </param>
             <returns></returns>
+            <remarks>
+            Schemat działania:
+            0. START - użytkownik wpisał komendę
+            1. Sprawdza czy gildia istnieje w bazie danych
+                1a. Jeśli nie:
+                    1a.1. Tworzy nową gildię
+                    1a.2. Dodaje ją do bazy danych gildii
+                    1a.3. Zapisuje zmiany do bazy danych
+                    1a.4. Przekazuje dalej dane
+                1b. Jeśli tak:
+                    1b.1. Pobiera dane o gildii
+            2. Pobiera dostępne w gildii kategorie
+            3. Wyszukuje opracowanie w kategoriach
+                3a. Jeśli nie ma takiego opracowania
+                    3a.1. KONIEC - nie znaleziono opracowania
+            4. Tworzy sformatowaną wiadomość
+            5. Sprawdza czy opracowanie posiada informację o obrazku
+                5a. Jeśli tak:
+                    5a.1. Dodaje do wiadomości obrazek
+            6. Wyświetla opracowanie
+            7. KONIEC - sukces, wyświetlono opracowanie
+            </remarks>
         </member>
         <member name="M:QuizDiscordBot.Modules.Commands.GetQuestion(System.Int32)">
             <summary>
@@ -745,6 +874,9 @@
             Użytkownik discorda
             </param>
             <returns></returns>
+            <remarks>
+            
+            </remarks>
         </member>
         <member name="T:QuizDiscordBot.Program">
             <summary>
