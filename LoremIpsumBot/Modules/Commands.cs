@@ -107,15 +107,81 @@ namespace QuizDiscordBot.Modules
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
+        #region GetQuestion()
         /// <summary>
         /// Zadaj użytkownikowi pytanie
         /// </summary>
         /// <param name="id">
-        /// numer pytania
+        /// numer identyfikacyjny pytania
         /// </param>
         /// <returns></returns>
         /// <remarks>
         /// jeśli użytkownik nie poda id pytania, bot podejmie próbę wylosowania pytania, którego użytkownik jeszcze nie widział.
+        /// 
+        /// Schemat działania:
+        /// 0. START - użytkownik wpisał komendę
+        /// 1. Sprawdza czy gildia istnieje w bazie danych
+        ///     1a. Jeśli nie:
+        ///         1a.1. Tworzy nową gildię
+        ///         1a.2. Dodaje ją do bazy danych gildii
+        ///         1a.3. Zapisuje zmiany do bazy danych
+        ///         1a.4. Przekazuje dalej dane
+        ///     1b. Jeśli tak:
+        ///         1b.1. Pobiera dane o gildii
+        /// 2. Sprawdza czy podany użytkownik istnieje w bazie danych
+        ///     2a. Jeśli nie:
+        ///         2a.1. Tworzy nowego użytkownika
+        ///         2a.2. Dodaje go do bazy danych gildii
+        ///         2a.3. Zapisuje zmiany do bazy danych
+        ///         2a.4. Przekazuje dalej dane
+        ///     2b. Jeśli tak:
+        ///         2b.1. Pobiera dane o użytkowniku
+        /// 3. Sprawdza czy użytkownik srecyzował które pytanie chce zobaczyć
+        ///     3a. Jeśli tak:
+        ///         3a.1. Sprawdza czy użytkownik widział to pytanie już wcześniej
+        ///             3a.1a. Jeśli tak:
+        ///                 3a.1a.1. Zapamiętuje tą informację
+        ///         3a.2. Wyszykuje z bazy danych pytanie o podanym numerze identyfikacyjnym
+        ///     3b. Jeśli nie:
+        ///         3b.1. Sprawdza najwyższy dostępny numer Id pytania
+        ///         3b.2. Pobiera wszystkie dostępne pytania
+        ///         3b.3. Pobiera wszystkie pytania, których użytkownik wcześniej nie widział
+        ///         3b.4. Sprawdza czy użytkownik widział wszystkie pytania
+        ///             3b.4a. Jeśli tak:
+        ///                 3b.4a.1. Zapamiętuje, że użytkownik widział pytanie
+        ///                 3b.4a.2. Losuje pytanie z listy wszystkich dostępnych pytań
+        ///             3b.4b. Jeśli nie:
+        ///                 3b.4a.1. Losuje pytanie z listy pytań nie widzianych wcześniej przez użytkownika
+        /// 4. Tworzy sformatowaną wiadomość
+        /// 5. Dodaje do jej treści potrzebne możliwe odpowiedzi
+        /// 6. Sprawdza czy pytanie posiada informację o obrazku
+        ///     6a. Jeśli tak:
+        ///         6a.1. Dodaje do wiadomości obrazek
+        /// 7. Dodaje do właściwości wiadomości informacje czy ma się zakończyć po pierwszym użyciu, czy ma wspierać tylko jedną interakcję na użytkownika,
+        ///    czas trwania oraz co zrobić po zakończeniu.
+        /// 8. Dla każdej możliwej odpowiedzi: dodaje przycisk umożliwiający interakcję i informację co zrobić jak użytkownik wejdzie w interakcję z daną odpowiedzią
+        ///    w zależności od tego czy odpowiedź jest poprawna
+        /// 9. Wyświeta sformatowane pytanie
+        /// 10. Oczekuje reakcji użytkownika
+        ///     10a. Jeśli nadejdzie:
+        ///         10a.1. Sprawdza z której kategorii pochodziło pytanie
+        ///         10a.2. Sprawdza czy użytkownik widział pytanie wcześniej i czy udzielił poprawnej odpowiedzi
+        ///             10a.2a. Jeśli widział wcześniej pytanie i odpowiedział poprawnie:
+        ///                 10a.2a.1. Sprawdza czy użytkownik udzielił poprzednio na to pytanie błędnej odpowiedzi
+        ///                     10a.2a.1a. Jeśli tak (poprawa):
+        ///                         10a.2a.1a.1. Usuwa pytanie z listy pytań na które udzielił błędnej odpowiedzi
+        ///                         10a.2a.1a.2. Dodaje użytkownikowi punkty za poprawną odpowiedź
+        ///             10a.2b. Jeśli nie widział wcześniej pytania ale odpowiedział na nie poprawnie:
+        ///                 10a.2b.1. Dodaje użytkownikowi punkty za poprawną odpowiedź
+        ///             10a.2c. Jeśli nie widział wcześniej pytania i nie udzielił na nie poprawnej odpowiedzi:
+        ///                 10a.2c.1. Dodaje pytanie do listy na które użytkownik nie udzielił poprawnej odpowiedzi
+        ///         10a.3. Sprawdza czy użytkownik widział wcześniej to pytanie
+        ///             10a.3a. Jeśli widzi je po raz pierwszy:
+        ///                 10a.3a.1. Dodaje pytanie do widzianych wcześniej pytań
+        ///         10a.4. Informuje użytkownika o wyniku
+        /// 11. Po zakończeniu czasu zapisuje zmiany do bazy danych
+        /// 12. Wysyła do użytkownika informacje o zakończeniu czasu
+        /// 13. KONIEC - sukces, pomyślnie wyświetlono pytanie
         /// </remarks>
         [Command("GetQuestion", RunMode = RunMode.Async)]
         [Alias("gq")]
@@ -337,6 +403,7 @@ namespace QuizDiscordBot.Modules
         {
             return categories.SingleOrDefault(x => x.Questions.SingleOrDefault(y => y.Id == id) != null).Id;
         }
+        #endregion
 
         /// <summary>
         /// Sprawdź postępu użytkownika
@@ -346,7 +413,31 @@ namespace QuizDiscordBot.Modules
         /// </param>
         /// <returns></returns>
         /// <remarks>
-        /// 
+        /// Schemat działania:
+        /// 0. START - użytkownik wpisał komendę
+        /// 1. Sprawdza, czy użytkownik sprecyzował czyje postępy chce sprawdzić
+        ///     1a. Jeśli nie:
+        ///         1a.1. Ustawia wartość domyślną parametru user jako użytkownika, który wywołał komendę
+        /// 2. Sprawdza czy gildia istnieje w bazie danych
+        ///     2a. Jeśli nie:
+        ///         2a.1. Tworzy nową gildię
+        ///         2a.2. Dodaje ją do bazy danych gildii
+        ///         2a.3. Zapisuje zmiany do bazy danych
+        ///         2a.4. Przekazuje dalej dane
+        ///     2b. Jeśli tak:
+        ///         2b.1. Pobiera dane o gildii
+        /// 3. Sprawdza czy podany użytkownik istnieje w bazie danych
+        ///     3a. Jeśli nie:
+        ///         3a.1. Tworzy nowego użytkownika
+        ///         3a.2. Dodaje go do bazy danych gildii
+        ///         3a.3. Zapisuje zmiany do bazy danych
+        ///         3a.4. Przekazuje dalej dane
+        ///     3b. Jeśli tak:
+        ///         3b.1. Pobiera dane o użytkowniku
+        /// 4. Tworzy sformatowaną wiadomość
+        /// 5. Zapełnia wiadomość informacjami o postępach użytkownika
+        /// 6. Wyświetla postępy użytkownika
+        /// 7. KONIEC - sukces, pomyślnie wyświetlono postępy użytkownika
         /// </remarks>
         [Command("Status")]
         public async Task Status(SocketGuildUser user = null)
@@ -386,7 +477,12 @@ namespace QuizDiscordBot.Modules
             for (int i = 0; i < guild.Categories.Count; i++)
             {
                 // add category points
-                fields.Add(new EmbedFieldBuilder() { IsInline = false, Name = guild.Categories[i].Name, Value = $"{100*(double)userAccount.CategoryComplition[i]/(double)guild.Categories[i].Questions.Count}%" });
+                fields.Add(new EmbedFieldBuilder() 
+                { 
+                    IsInline = false, 
+                    Name = guild.Categories[i].Name, 
+                    Value = $"{100*(double)userAccount.CategoryComplition[i]/(double)guild.Categories[i].Questions.Count}%" 
+                });
             }
 
             embed.Fields = fields;
