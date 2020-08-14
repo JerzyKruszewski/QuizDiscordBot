@@ -190,9 +190,6 @@ namespace QuizDiscordBot.Modules
             // question which will be fetch from server database
             Question question = null;
 
-            // maximum of server questions ids
-            int maxId = 0;
-
             // if question was already seen
             bool wasSeen = false;
 
@@ -222,8 +219,6 @@ namespace QuizDiscordBot.Modules
                 // Get maximum question id
                 foreach (Category category in guild.Categories)
                 {
-                    maxId += category.Questions.Count;
-
                     allQuestions.AddRange(category.Questions); // and all questions as well
                 }
 
