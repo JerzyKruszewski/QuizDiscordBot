@@ -269,7 +269,7 @@ namespace QuizDiscordBot.Modules
 
             // ReactionCallbackData(message content, embed, expires after first use, if command should react to only one answer from 1 user,
             //                                                                                          command timeout, what to do if command expires)
-            ReactionCallbackData reactionData = new ReactionCallbackData("", embed, true, true, TimeSpan.FromSeconds(120), (c) => SaveChanges(c.Channel));
+            ReactionCallbackData reactionData = new ReactionCallbackData("", embed, true, true, TimeSpan.FromSeconds(120), (c) => Timeout(c.Channel));
 
             // Iterate all possible answers and add answer placeholder
             for (int i = 0; i < question.PossibleAnswers.Count; i++)
@@ -299,9 +299,8 @@ namespace QuizDiscordBot.Modules
         /// Kanał na który należy wysłać informacje o zapisaniu zmian w bazie
         /// </param>
         /// <returns></returns>
-        private static async Task SaveChanges(ISocketMessageChannel channel)
+        private static async Task Timeout(ISocketMessageChannel channel)
         {
-            Guilds.Save();
             await channel.SendMessageAsync("Timed Out! Changes Commited To Database!");
         }
 
@@ -380,6 +379,8 @@ namespace QuizDiscordBot.Modules
             }
 
             NotifyAboutResult(goodAnswer, channel);
+
+            Guilds.Save();
         }
 
         /// <summary>
