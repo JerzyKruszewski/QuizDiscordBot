@@ -35,7 +35,7 @@ namespace QuizDiscordBot.Modules
         ///                 1a.1a.4. Przekazuje dalej dane
         ///             1a.1b. Jeśli tak:
         ///                 1a.1b.1. Pobiera dane o gildii
-        ///         1a.2. Pobiera wszystkie dosyępne w gildii kategorie
+        ///         1a.2. Pobiera wszystkie dostępne w gildii kategorie
         ///         1a.3. Wysyła do użytkownika informacje o istniejących kategoriach
         ///         1a.4. Oczekuje na reakcję użytkownika z nazwą nowej kategorii
         ///             1a.4a. Jeśli nie nadejdzie:
@@ -121,7 +121,7 @@ namespace QuizDiscordBot.Modules
         ///                 1a.1a.4. Przekazuje dalej dane
         ///             1a.1b. Jeśli tak:
         ///                 1a.1b.1. Pobiera dane o gildii
-        ///         1a.2. Pobiera wszystkie dosyępne w gildii kategorie
+        ///         1a.2. Pobiera wszystkie dostępne w gildii kategorie
         ///         1a.3. Wysyła do użytkownika informacje o istniejących kategoriach
         ///         1a.4. Oczekuje na reakcję użytkownika z indeksem kategorii
         ///             1a.4a. Jeśli nie nadejdzie lub będzie miało nieprawidłowy format:
@@ -287,7 +287,7 @@ namespace QuizDiscordBot.Modules
         ///                 1a.1a.4. Przekazuje dalej dane
         ///             1a.1b. Jeśli tak:
         ///                 1a.1b.1. Pobiera dane o gildii
-        ///         1a.2. Pobiera wszystkie dosyępne w gildii kategorie
+        ///         1a.2. Pobiera wszystkie dostępne w gildii kategorie
         ///         1a.3. Wysyła do użytkownika informacje o istniejących kategoriach
         ///         1a.4. Oczekuje na reakcję użytkownika z indeksem kategorii
         ///             1a.4a. Jeśli nie nadejdzie lub będzie miało nieprawidłowy format:

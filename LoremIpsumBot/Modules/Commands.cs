@@ -39,7 +39,7 @@ namespace QuizDiscordBot.Modules
         ///         1a.3. Zapisuje zmiany do bazy danych
         ///         1a.4. Przekazuje dalej dane
         ///     1b. Jeśli tak:
-        ///         1b.1. Pobiera dane o ocene
+        ///         1b.1. Pobiera dane o ocenie
         /// 2. Aktualizuje ocenę użytkownika
         /// 3. Zapisuje zmiany do bazy danych
         /// 4. KONIEC - sukces, pomyślnie oceniono pracę algorytmu
@@ -136,7 +136,7 @@ namespace QuizDiscordBot.Modules
         ///         2a.4. Przekazuje dalej dane
         ///     2b. Jeśli tak:
         ///         2b.1. Pobiera dane o użytkowniku
-        /// 3. Sprawdza czy użytkownik srecyzował które pytanie chce zobaczyć
+        /// 3. Sprawdza czy użytkownik sprecyzował które pytanie chce zobaczyć
         ///     3a. Jeśli tak:
         ///         3a.1. Sprawdza czy użytkownik widział to pytanie już wcześniej
         ///             3a.1a. Jeśli tak:
@@ -161,7 +161,7 @@ namespace QuizDiscordBot.Modules
         ///    czas trwania oraz co zrobić po zakończeniu.
         /// 8. Dla każdej możliwej odpowiedzi: dodaje przycisk umożliwiający interakcję i informację co zrobić jak użytkownik wejdzie w interakcję z daną odpowiedzią
         ///    w zależności od tego czy odpowiedź jest poprawna
-        /// 9. Wyświeta sformatowane pytanie
+        /// 9. Wyświetla sformatowane pytanie
         /// 10. Oczekuje reakcji użytkownika
         ///     10a. Jeśli nadejdzie:
         ///         10a.1. Sprawdza z której kategorii pochodziło pytanie
