@@ -138,7 +138,7 @@ namespace QuizDiscordBot.Modules
         ///                 1a.6a.1. Poinformuje użytkownika o błędzie
         ///                 1a.6a.2. Wstrzymuje proces
         ///                 1a.6a.3. KONIEC - algorytm nie otrzymał wymaganej informacji
-        ///         1a.7. Odczytuje możliwe odpowiedzi z pojedyńczej wiadomości
+        ///         1a.7. Odczytuje możliwe odpowiedzi z pojedynczej wiadomości
         ///         1a.8. Wysyła do użytkownika informacje o odczytanych możliwych odpowiedziach
         ///         1a.9. Oczekuje na reakcję użytkownika z indeksem prawidłowej odpowiedzi
         ///             1a.9a. Jeśli nie nadejdzie lub będzie miało nieprawidłowy format lub nie odczytano odpowiedzi o takim indeksie:
@@ -299,7 +299,7 @@ namespace QuizDiscordBot.Modules
         ///                 1a.5a.1. Poinformuje użytkownika o błędzie
         ///                 1a.5a.2. Wstrzymuje proces
         ///                 1a.5a.3. KONIEC - algorytm nie otrzymał wymaganej informacji
-        ///         1a.6. Oczekuje na reakcję użytkownika z trescią opracowania
+        ///         1a.6. Oczekuje na reakcję użytkownika z treścią opracowania
         ///             1a.6a. Jeśli nie nadejdzie:
         ///                 1a.6a.1. Poinformuje użytkownika o błędzie
         ///                 1a.6a.2. Wstrzymuje proces
