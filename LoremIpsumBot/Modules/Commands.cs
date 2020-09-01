@@ -56,6 +56,8 @@ namespace QuizDiscordBot.Modules
 
             // save changes
             UserFeedbacks.Save();
+
+            await Context.Channel.SendMessageAsync("Dziękujemy za pozostawienie oceny.");
         }
 
         /// <summary>

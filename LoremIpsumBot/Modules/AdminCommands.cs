@@ -100,6 +100,8 @@ namespace QuizDiscordBot.Modules
 
             // Save server informations with new category
             Guilds.Save();
+
+            await Context.Channel.SendMessageAsync("Dodano kategorię.");
         }
 
         /// <summary>
@@ -260,6 +262,8 @@ namespace QuizDiscordBot.Modules
                 desiredCategory.Questions.Add(newQuestion);
 
                 Guilds.Save();
+
+                await Context.Channel.SendMessageAsync("Dodano pytanie.");
             }
             catch (Exception)
             {
@@ -392,6 +396,8 @@ namespace QuizDiscordBot.Modules
                 desiredCategory.ProblemCovers.Add(problem);
 
                 Guilds.Save();
+
+                await Context.Channel.SendMessageAsync("Dodano opracowanie problemu.");
             }
             catch (Exception)
             {
